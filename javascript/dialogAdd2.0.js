@@ -382,3 +382,32 @@ function pagoConta(idConta){
 
 carregarContas();
 carregarHistorico();
+
+
+// ADIÇÃO DA RECEITA
+const btnReceita = document.getElementById('opcreceita');
+const btnDespesa = document.getElementById('opcdespesa');
+
+const formRec = document.getElementById('formRec');
+
+btnReceita.addEventListener('click', () => {
+    formConta.hidden = true;
+    formRec.hidden = false;
+
+    btnReceita.style.backgroundColor = "rgb(37, 197, 37)";
+    btnReceita.style.color = "white";
+
+    btnDespesa.style.backgroundColor = "rgb(219, 93, 93)";
+    btnDespesa.style.color = "black";
+})
+
+btnDespesa.addEventListener('click', () => {
+    formRec.hidden = true;
+    formConta.hidden = false;
+
+    btnDespesa.style.backgroundColor = "rgb(206, 63, 63)";
+    btnDespesa.style.color = "white";
+
+    btnReceita.style.backgroundColor = "#22c55e";
+    btnReceita.style.color = "black";
+})

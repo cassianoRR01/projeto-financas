@@ -171,10 +171,59 @@ dialog {
     gap: 12px;
 }
 
-#modalConta h2 {
-    text-align: center;
-    color: #16a34a;
-    margin-bottom: 10px;
+#modalConta #formConta {
+    width: 100%;
+}
+
+#modalConta #formRec {
+    width: 100%;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+#modalConta #modalopc {
+    display: flex;
+    margin: auto auto 5% auto;
+    justify-content: space-around;
+    align-items: center;
+    width: 60%;
+    height: 27px;
+    border-radius: 10px 10px 10px 10px;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.39);
+}
+
+#modalConta #modalopc p {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#modalConta #modalopc #opcdespesa {
+    border-radius: 10px 0px 0px 10px;
+    background-color: rgb(219, 93, 93);
+    transition: 0.3s;
+}
+
+#modalConta #modalopc #opcdespesa:hover {
+    background-color: rgb(206, 63, 63);
+    color: white;
+    cursor: pointer;
+}
+
+#modalConta #modalopc #opcreceita {
+    border-radius: 0px 10px 10px 0px;
+    background: #22c55e;
+    transition: 0.3s;
+}
+
+#modalConta #modalopc #opcreceita:hover {
+    background-color: rgb(37, 197, 37);
+    color: white;
+    cursor: pointer;
 }
 
 #modalConta input {

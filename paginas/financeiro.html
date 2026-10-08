@@ -106,28 +106,48 @@
 
     <!-- Dialog -->
     <dialog id="modalConta">
-        <form id="formConta">
-            <h2>Adicionar Conta</h2>
-            
-            <input type="text" id="nome" class="campo" placeholder="Nome da conta">
-            <span class="spanForm" id="spanConta">Insira um Nome à Conta</span>
+        <div id="modalopc">
+            <p id="opcdespesa">Despesa</p>
 
-            <input type="number" id="valor" class="campo" step="0.01" placeholder="Valor R$">
-            <span class="spanForm" id="spanConta">Insira um Valor à Conta</span>
-            
-            <label for="abertura">Abertura</label>
-            <input type="date" id="abertura" class="campo" placeholder="Data de abertura">
-            <span class="spanForm" id="spanConta">Data de Abertura Inválida</span>
-            
-            <label for="vencimento">Vencimento</label>
-            <input type="date" id="vencimento" class="campo" placeholder="Data de vencimento">
-            <span class="spanForm" id="spanConta">Data de Vencimento Inválida</span>
+            <p id="opcreceita">Receita</p>
+        </div>
+
+        <div id="areaForm">
+            <!--formulario de despesa-->
+            <form id="formConta">
+                <input type="text" id="nome" class="campo" placeholder="Nome da despesa">
+                <span class="spanForm" id="spanConta">Insira um Nome à Despesa</span>
+
+                <input type="number" id="valor" class="campo" step="0.01" placeholder="Valor R$">
+                <span class="spanForm" id="spanConta">Insira um Valor à Despesa</span>
+                
+                <label for="abertura">Abertura</label>
+                <input type="date" id="abertura" class="campo" placeholder="Data de abertura">
+                <span class="spanForm" id="spanConta">Data de Abertura Inválida</span>
+                
+                <label for="vencimento">Vencimento</label>
+                <input type="date" id="vencimento" class="campo" placeholder="Data de vencimento">
+                <span class="spanForm" id="spanConta">Data de Vencimento Inválida</span>
+
+                <div>
+                    <button type="submit" class="submit">Salvar</button>
+
+                    <button type="button" id="fechar" class="cancel">Cancelar</button>
+                </div>
+            </form> 
+
+            <!--formulario de receita-->
+            <form id="formRec" hidden>
+            <input type="text" id="nomeRec" class="campo" placeholder="Nome da receita">
+
+            <input type="number" id="valorRec" class="campo" step="0.01" placeholder="Valor R$">
 
             <div>
                 <button type="submit" class="submit">Salvar</button>
                 <button type="button" id="fechar" class="cancel">Cancelar</button>
             </div>
         </form>
+        </div>
     </dialog>
 
 
