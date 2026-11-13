@@ -33,3 +33,5 @@ CREATE TABLE movimentacoes(
     CONSTRAINT fk_movimentacao_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 show tables;
+
+select * from usuarios;
