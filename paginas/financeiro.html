@@ -62,17 +62,17 @@
         <section class="resumo">
 
             <div class="cardResumo">
-                <h4>Total mensal</h4>
+                <h4>Despesa</h4>
                 <p id="totalMen">R$ 2050,00</p>
             </div>
 
             <div class="cardResumo">
-                <h4>Pago</h4>
+                <h4>Receita</h4>
                 <p id="pago">R$ 0,00</p>
             </div>
 
             <div class="cardResumo">
-                <h4>Pendente</h4>
+                <h4>Saldo</h4>
                 <p id="pendente">R$ 2050,00</p>
             </div>
 
@@ -91,7 +91,7 @@
                 <h2>Nenhuma conta cadastrada</h2>
 
                 <p>
-                    Clique no botão + para adicionar sua primeira conta.
+                    Clique no botão + para adicionar suas despesas ou receitas.
                 </p>
 
             </div>
@@ -120,6 +120,11 @@
 
                 <input type="number" id="valor" class="campo" step="0.01" placeholder="Valor R$">
                 <span class="spanForm" id="spanConta">Insira um Valor à Despesa</span>
+
+                <div id="divCheck">
+                    <input type="checkbox" id="checkvencimento" name="checkvencimento">
+                    <label for="checkvencimento">Não possui vencimento</label>
+                </div>
                 
                 <label for="abertura">Abertura</label>
                 <input type="date" id="abertura" class="campo" placeholder="Data de abertura">
