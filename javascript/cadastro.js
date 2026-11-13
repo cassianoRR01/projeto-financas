@@ -23,6 +23,7 @@ const complementoCad = document.getElementById('complementoCadastro')
 // Mensagem Sucesso //
 const spanCad = document.getElementById('spanCadastro')
 
+/* Antiga funcao do ViaCep pq o javascript ficou de putaria e tive q mudar
 function consultaCEP(){
     let cep = cepCad.value.replace(/\D/g, '');
 
@@ -37,7 +38,48 @@ function consultaCEP(){
             ufCad.value = data.uf
         })
         .catch(error => console.error(error))
+} */
+ 
+async function consultaCEP() {
+
+    const cep = cepCad.value.replace(/\D/g, '');
+
+    // Verifica se o CEP possui 8 números
+    if (cep.length !== 8) {
+        return;
+    }
+
+    try {
+        const resposta = await fetch(
+            `../php/cep/consultar.php?cep=${encodeURIComponent(cep)}`
+        );
+
+        const resultado = await resposta.json();
+
+        // Verifica se houve algum erro na consulta
+        if (!resposta.ok || !resultado.sucesso) {
+            throw new Error(resultado.mensagem);
+        }
+
+        // Recupera os dados do endereço
+        const endereco = resultado.endereco;
+        ruaCad.value = endereco.logradouro || "";
+        bairroCad.value = endereco.bairro || "";
+        localidadeCad.value = endereco.localidade || "";
+        estadoCad.value = endereco.estado || "";
+        ufCad.value = endereco.uf || "";
+
+        tiraErro(5);
+
+    } catch (erro) {
+        console.error("Erro ao consultar CEP:", erro);
+        spanConta[5].textContent =
+            erro.message || "Não foi possível consultar o CEP.";
+        setError(5);
+
+    }
 }
+
 
 // Mensagem de Erro //
 
@@ -68,7 +110,7 @@ function valCadNome(){
 
 function valCadEmail(){
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    email = emailCad.value
+    const email = emailCad.value.trim();
     if(regex.test(email)){
         tiraErro(1)
         return true
@@ -164,6 +206,7 @@ function valCepCad(){
     return true;
 }
 
+/* Comentando a função antiga de salvamento pq se der merda tem ela pra tapar buraco
 function salvarCad(){
     const userCadastrados = JSON.parse(localStorage.getItem('userCadastrados')) || [];
 
@@ -199,8 +242,9 @@ function salvarCad(){
     localStorage.setItem('usuarios', JSON.stringify(userCadastrados));
 
     return true;
-}
+} */
 
+/* Essa parte tbm pq é ela q envia pra parada la etc
 formCad.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -219,4 +263,79 @@ formCad.addEventListener("submit", (e) => {
         spanCad.style.display = 'inline-block'
         
     } 
+}); */
+
+// Agr começa a nova forma de salvar a parada, vai mandar pro php primeiro e depois pro banco SUPOSTAMENTE
+
+async function salvarCad(){
+    // Os dados que vao pro php
+    const usuario = {
+        nome: nomeCad.value.trim(),
+        email: emailCad.value.trim().toLowerCase(),
+        senha: senhaCad.value,
+        cpf: cpfCad.value.replace(/\D/g, ''),
+        cep: cepCad.value.replace(/\D/g, ''),
+        rua: ruaCad.value.trim(),
+        bairro: bairroCad.value.trim(),
+        cidade: localidadeCad.value.trim(),
+        estado: estadoCad.value.trim(),
+        uf: ufCad.value.trim(),
+        numero: numCad.value.trim(),
+        complemento: complementoCad.value.trim()
+    }
+
+    try {
+        const resposta = await fetch(
+            "../php/usuarios/cadastrar.php",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(usuario)
+            }
+        );
+
+        const resultado = await resposta.json();
+
+        if(!resposta.ok){
+            throw new Error(resultado.mensagem);
+        }
+
+        spanCad.textContent = resultado.mensagem;
+        spanCad.style.color = "green";
+        spanCad.style.display = "inline-block";
+
+        formCad.reset();
+
+    } catch(erro){
+        spanCad.textContent = erro.mensagem || "Erro ao realizar cadastro.";
+        spanCad.style.color = "red";
+        spanCad.style.display = "inline-block";
+    }
+}
+
+// Evento que envia a porra toda (ou nao)
+formCad.addEventListener("submit", async(e) =>{
+    e.preventDefault();
+
+    spanCad.style.display = "none";
+
+    emailCad.value = emailCad.value.trim().toLowerCase();
+    
+    const validacoesCad = [
+        valCadNome(),
+        valCadEmail(),
+        valSenhaCad(),
+        valCpfCad(),
+        valCepCad()
+    ];
+
+    const formCadValido = validacoesCad.every(resultado => resultado === true);
+
+    if(formCadValido){
+        await salvarCad();
+    }
 });
+
