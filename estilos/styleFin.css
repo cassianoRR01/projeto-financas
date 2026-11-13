@@ -163,6 +163,12 @@ dialog {
     margin: auto;
 }
 
+/* amostragem das datas de abertura e vencimento*/
+
+.oculto {
+    display: none !important;
+}
+
 /*formulario add conta*/
 
 #modalConta form {

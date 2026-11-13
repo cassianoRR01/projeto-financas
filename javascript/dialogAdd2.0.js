@@ -411,3 +411,23 @@ btnDespesa.addEventListener('click', () => {
     btnReceita.style.backgroundColor = "#22c55e";
     btnReceita.style.color = "black";
 })
+
+// Vencimento
+
+const checkVenci = document.getElementById("checkvencimento");
+const campoAbertura = document.getElementById("abertura");
+const campoVencimento = document.getElementById("vencimento");
+const elementosData = [
+    document.querySelector('label[for="abertura"]'),
+    campoAbertura,
+    campoAbertura.nextElementSibling,
+    document.querySelector('label[for="vencimento"]'),
+    campoVencimento,
+    campoVencimento.nextElementSibling
+];
+
+checkVenci.addEventListener('change', () => {
+    elementosData.forEach(elemento => {
+        elemento.classList.toggle('oculto', checkVenci.checked);
+    });
+});
