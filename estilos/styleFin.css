@@ -185,7 +185,7 @@ dialog {
     width: 100%;
 }
 
-[hidden] {
+#formConta[hidden], #formRec[hidden] {
     display: none !important;
 }
 
@@ -364,6 +364,15 @@ dialog {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.historico::-webkit-scrollbar {
+    width: 8px;
+}
+
+.historico::-webkit-scrollbar-thumb {
+    background: #22c55e;
+    border-radius: 20px;
 }
 
 /* Card do histórico */
@@ -566,7 +575,6 @@ body.dark dialog label {
 }
 
 body.dark .historico {
-    background-color: #111827;
     color: white;
 }
 

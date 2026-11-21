@@ -13,6 +13,10 @@ if(!usuarioLogado.historico){
     usuarioLogado.historico = [];
 }
 
+if(!usuarioLogado.receitas){
+    usuarioLogado.receitas = [];
+}
+
 // Integração Login com a DialogLogin //
 const BtnLogin = document.getElementById("btnLogin");
 const loginDialog = document.getElementById("loginDialog");
@@ -99,36 +103,39 @@ let pago = 0;
 
 function atualizarTotais(){
 
-    totalMensal = 0;
-    pendente = 0;
-    pago = 0;
+    let totalDespesas = 0;
+    let totalReceitas = 0;
 
-    // Soma as contas pendentes
+    // Soma despesas pendentes
     usuarioLogado.contas.forEach(conta => {
-        totalMensal += conta.valor;
-        pendente += conta.valor;
+        totalDespesas += Number(conta.valor);
     });
 
-    // Soma as contas já pagas
+    // Soma despesas pagas
     usuarioLogado.historico.forEach(conta => {
-        totalMensal += conta.valor;
-        pago += conta.valor;
+        totalDespesas += Number(conta.valor);
     });
 
-    document.getElementById('totalMen').textContent =
-        `R$ ${totalMensal.toFixed(2)}`;
+    // Soma receitas
+    usuarioLogado.receitas.forEach(receita => {
+        totalReceitas += Number(receita.valor);
+    });
 
-    document.getElementById('pago').textContent =
-        `R$ ${pago.toFixed(2)}`;
+    // Calcula saldo
+    const saldo = totalReceitas - totalDespesas;
 
-    document.getElementById('pendente').textContent =
-        `R$ ${pendente.toFixed(2)}`;
+    document.getElementById('totalDespesas').textContent = `R$ ${totalDespesas.toFixed(2)}`;
+
+    document.getElementById('totalReceitas').textContent = `R$ ${totalReceitas.toFixed(2)}`;
+
+    document.getElementById('saldo').textContent = `R$ ${saldo.toFixed(2)}`;
 }
 
 
 const btnAdd = document.getElementById('btnAdd');
 const modalConta = document.getElementById('modalConta');
-const fechar = document.getElementById('fechar');
+const fecharDespesa = document.getElementById('fecharDespesa');
+const fecharReceita = document.getElementById('fecharReceita');
 const formConta = document.getElementById('formConta');
 const fundoContas = document.querySelector(".semContas");
 
@@ -137,27 +144,47 @@ btnAdd.addEventListener("click", function() {
 });
 
 function atualizarMensagemSemContas() {
-    if (usuarioLogado.contas.length === 0) {
+    if (
+        usuarioLogado.contas.length === 0 &&
+        usuarioLogado.receitas.length === 0
+    ) {
         fundoContas.style.display = "block";
     } else {
         fundoContas.style.display = "none";
     }
 }
 
-fechar.addEventListener("click", () =>{modalConta.close(),formConta.reset()});
+fecharDespesa.addEventListener('click', () => {
+    modalConta.close();
+    formConta.reset();
+});
+
+fecharReceita.addEventListener('click', () => {
+    modalConta.close();
+    formRec.reset();
+});
 
 // Function que carrega todas as contas quando recarrega a pagina //
-function carregarContas(){
+
+function carregarContas() {
 
     document.querySelector('.contas').innerHTML = '';
 
+    // Carrega despesas pendentes
     usuarioLogado.contas.forEach(conta => {
         exibirContaTela(conta);
     });
 
+    // Carrega receitas
+    usuarioLogado.receitas.forEach(receita => {
+        exibirReceitaTela(receita);
+    });
+
     atualizarMensagemSemContas();
+
     atualizarTotais();
 }
+
 
 carregarContas();
 
@@ -167,34 +194,65 @@ function exibirContaTela(conta){
     const listaContas = document.querySelector('.contas');
 
     const contaDiv = document.createElement('div');
+
     contaDiv.classList.add('conta');
     contaDiv.id = conta.id;
 
-    // Formatar Data // 
-    const [anoAbertura, mesAbertura, diaAbertura] = conta.abertura.split("-");
-    const [anoVencimento, mesVencimento, diaVencimento] =conta.vencimento.split("-");
+    // Formatação das datas
+    const dataAberFormatada = conta.abertura
+        ? conta.abertura.split('-').reverse().join('/')
+        : 'Não informada';
 
-    const dataAberFormatada = `${diaAbertura}/${mesAbertura}/${anoAbertura}`;
-    const dataVencFormatada = `${diaVencimento}/${mesVencimento}/${anoVencimento}`;
+    const dataVencFormatada = conta.vencimento
+        ? conta.vencimento.split('-').reverse().join('/')
+        : 'Não informada';
 
     contaDiv.innerHTML = `
         <h3>${conta.nome}</h3>
+
         <p>Abertura: ${dataAberFormatada}</p>
+
         <p>Vencimento: ${dataVencFormatada}</p>
-        <p>Valor: R$ ${conta.valor.toFixed(2)}</p>
+
+        <p>Valor: R$ ${Number(conta.valor).toFixed(2)}</p>
+
         ${
-            conta.status === 'pendente'?
-            `<button onclick="pagoConta(${conta.id})">Pago</button>`:`<p>✓Pago</p>`
+            conta.status === 'pendente'
+            ? `<button onclick="pagoConta(${conta.id})">Pago</button>`
+            : `<p>✓ Pago</p>`
         }
     `;
 
-    listaContas.appendChild(contaDiv)
+    listaContas.appendChild(contaDiv);
 }
 
 // Mensagem de Erro //
 
 const spanConta = document.querySelectorAll('.spanForm')
 const campo = document.querySelectorAll('.campo')
+
+function exibirReceitaTela(receita) {
+
+    const listaContas = document.querySelector('.contas');
+
+    const receitaDiv = document.createElement('div');
+
+    receitaDiv.classList.add('conta', 'receita');
+
+    receitaDiv.id = receita.id;
+
+    receitaDiv.innerHTML = `
+        <h3>${receita.nome}</h3>
+
+        <p>Tipo: Receita</p>
+
+        <p>Valor: R$ ${Number(receita.valor).toFixed(2)}</p>
+
+        <p>Cadastro: ${receita.dataCadastro}</p>
+    `;
+
+    listaContas.appendChild(receitaDiv);
+}
 
 // Functions para Validar Campos //
 
@@ -229,40 +287,61 @@ function valValor(){
 }
 
 function valDataAber(){
-    if(campo[2].value == ""){
-        setError(2)
-        spanConta[2].textContent = "Data Inválida"
-        return false;
-    } else {
-        tiraErro(2)
+    if (checkVenci.checked) {
+        tiraErro(2);
         return true;
     }
+
+    if (campo[2].value === "") {
+        setError(2);
+        spanConta[2].textContent = "Data de abertura inválida";
+        return false;
+    }
+
+    tiraErro(2);
+    return true;
 }
 
 function valDataVenc(){
-    if(campo[3].value == ""){
-        setError(3)
-        spanConta[3].textContent = "Data Inválida"
-        return false;
-    } else {
-        tiraErro(3)
+    if (checkVenci.checked) {
+        tiraErro(3);
         return true;
     }
+
+    if (campo[3].value === "") {
+        setError(3);
+        spanConta[3].textContent = "Data de vencimento inválida";
+        return false;
+    }
+
+    tiraErro(3);
+    return true;
 }
 
 function exibirHistoricoTela(conta){
     const historicoDiv = document.querySelector('.historico');
+
     const item = document.createElement('div');
+
     item.classList.add('itemHistorico');
 
-    const [anoA, mesA, diaA] = conta.abertura.split('-')
-    const [anoV, mesV, diaV] = conta.vencimento.split('-')
+    const dataAberFormatada = conta.abertura
+        ? conta.abertura.split('-').reverse().join('/')
+        : 'Não informada';
+
+    const dataVencFormatada = conta.vencimento
+        ? conta.vencimento.split('-').reverse().join('/')
+        : 'Não informada';
 
     item.innerHTML = `
         <h3>${conta.nome}</h3>
-        <p>Valor: R$ ${conta.valor.toFixed(2)}</p>
-        <p>Abertura: ${diaA}/${mesA}/${anoA}</p>
-        <p>Vencimento: ${diaV}/${mesV}/${anoV}</p>
+
+        <p>Valor: R$ ${Number(conta.valor).toFixed(2)}</p>
+
+        <p>Abertura: ${dataAberFormatada}</p>
+
+        <p>Vencimento: ${dataVencFormatada}</p>
+
         <p>Pagamento: ${conta.dataPagamento}</p>
     `;
 
@@ -290,27 +369,41 @@ formConta.addEventListener("submit", (e) => {
     const dataAbertura = document.getElementById('abertura').value;
     const dataVencimento = document.getElementById('vencimento').value;
 
-    function valDatas(){
-        if(dataAbertura == dataVencimento){
-            console.log('Datas iguais')
-            setError(2)
-            setError(3)
-            spanConta[2].textContent = 'Datas Iguais'
-            spanConta[3].textContent = 'Datas Iguais'
-            return false;
-        } 
-        else if(dataAbertura > dataVencimento){
-            console.log("Abertura > Vencimento")
-            setError(3)
-            spanConta[3].textContent = 'Data de Vencimento é anterior à Abertura'
-            return false;
-        } 
-        else if(dataAbertura < dataVencimento){
-            console.log("Abertura < Vencimento")
-            tiraErro(2)
-            tiraErro(3)
+    function valDatas() {
+
+        if (checkVenci.checked) {
             return true;
         }
+
+        if (!dataAbertura || !dataVencimento) {
+            return true;
+        }
+
+        if (dataAbertura === dataVencimento) {
+
+            setError(2);
+            setError(3);
+
+            spanConta[2].textContent = 'Datas iguais';
+            spanConta[3].textContent = 'Datas iguais';
+
+            return false;
+        }
+
+        if (dataAbertura > dataVencimento) {
+
+            setError(3);
+
+            spanConta[3].textContent =
+                'Data de vencimento é anterior à abertura';
+
+            return false;
+        }
+
+        tiraErro(2);
+        tiraErro(3);
+
+        return true;
     }
 
 
@@ -333,8 +426,8 @@ formConta.addEventListener("submit", (e) => {
             id: Date.now(),
             nome: nomeConta,
             valor: valorConta,
-            abertura: dataAbertura,
-            vencimento: dataVencimento,
+            abertura: checkVenci.checked ? '' : dataAbertura,
+            vencimento: checkVenci.checked ? '' : dataVencimento,
             status: 'pendente'
         };
 
@@ -349,6 +442,7 @@ formConta.addEventListener("submit", (e) => {
     }
     
 })
+
 
 function pagoConta(idConta){
 
@@ -411,6 +505,57 @@ btnDespesa.addEventListener('click', () => {
     btnReceita.style.backgroundColor = "#22c55e";
     btnReceita.style.color = "black";
 })
+
+const nomeRec = document.getElementById('nomeRec');
+const valorRec = document.getElementById('valorRec');
+
+formRec.addEventListener('submit', (e) => {
+
+    e.preventDefault();
+
+    const nome = nomeRec.value.trim();
+    const valor = parseFloat(valorRec.value);
+
+    // Validação
+    if (nome === '' || isNaN(valor) || valor <= 0) {
+
+        alert('Preencha corretamente o nome e o valor da receita.');
+
+        return;
+    }
+
+    // Criação da receita
+    const novaReceita = {
+
+        id: Date.now(),
+
+        nome: nome,
+
+        valor: valor,
+
+        dataCadastro: new Date().toLocaleDateString('pt-BR')
+
+    };
+
+    // Adiciona ao usuário
+    usuarioLogado.receitas.push(novaReceita);
+
+    // Salva no localStorage
+    salvarUsuario();
+
+    // Atualiza a tela
+    exibirReceitaTela(novaReceita);
+
+    atualizarMensagemSemContas();
+
+    atualizarTotais();
+
+    // Fecha e limpa o formulário
+    modalConta.close();
+
+    formRec.reset();
+
+});
 
 // Vencimento
 
