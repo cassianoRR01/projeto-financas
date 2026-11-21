@@ -83,6 +83,20 @@ btnLogout.addEventListener('click', () => {
     window.location.href = 'login.html'
 });
 
+// dialog adm
+
+const perfilAdm = document.addEventListener("dialogPerfilAdm");
+const btnAdm = document.addEventListener("btnAdm");
+const fecharAdm = document.addEventListener("fecharAdm");
+
+btnAdm.addEventListener("click", () => {
+    perfilAdm.showModal();
+})
+
+fecharAdm.addEventListener("click", () => {
+    perfilAdm.showModal(false);
+})
+
 // Historico de pagamentos //
 const btnHis = document.getElementById('btnHistorico')
 const modalHis = document.getElementById('dialogHistorico')
