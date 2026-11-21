@@ -55,7 +55,7 @@
             history
         </span>
 
-        <span class="material-symbols-outlined menuIcon" id="btnAdm">
+        <span class="material-symbols-outlined menuIcon" id="btnAdm" hidden>
             manage_accounts
         </span>
 
@@ -180,9 +180,19 @@
     <!--Dialog do perfil do adm-->
 
     <dialog id="dialogPerfilAdm">
-        <p>coisas irão entrar aqui</p>
+        <div class="cabecalhoAdm">
+            <div>
+                <p class="rotuloAdm">ÁREA ADMINISTRATIVA</p>
+                <h2>Usuários cadastrados</h2>
+            </div>
+            <span class="material-symbols-outlined iconeAdm">manage_accounts</span>
+        </div>
 
-        <button id="fecharAdm">fechar</button>
+        <p id="totalUsuariosAdm" class="totalUsuariosAdm" aria-live="polite"></p>
+        <p id="estadoUsuariosAdm" class="estadoUsuariosAdm" role="status">Carregando usuários...</p>
+        <ul id="listaUsuariosAdm" class="listaUsuariosAdm"></ul>
+
+        <button id="fecharAdm" type="button">Fechar</button>
     </dialog>
 
     <dialog id="dialogHistorico">

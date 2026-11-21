@@ -1,5 +1,5 @@
 // Verifa se o usuario está logado, caso não, ele é redirecionado a tela de login //
-const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'))
+const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado')) || {}
 
 async function verificarUsuario(){
     try {
@@ -85,17 +85,61 @@ btnLogout.addEventListener('click', () => {
 
 // dialog adm
 
-const perfilAdm = document.addEventListener("dialogPerfilAdm");
-const btnAdm = document.addEventListener("btnAdm");
-const fecharAdm = document.addEventListener("fecharAdm");
+const perfilAdm = document.getElementById("dialogPerfilAdm");
+const btnAdm = document.getElementById("btnAdm");
+const fecharAdm = document.getElementById("fecharAdm");
+const totalUsuariosAdm = document.getElementById("totalUsuariosAdm");
+const estadoUsuariosAdm = document.getElementById("estadoUsuariosAdm");
+const listaUsuariosAdm = document.getElementById("listaUsuariosAdm");
 
-btnAdm.addEventListener("click", () => {
+async function verificarPerfilAdm() {
+    try {
+        const resposta = await fetch("../php/usuarios/verifcar_sessao.php");
+        const resultado = await resposta.json();
+
+        if (resposta.ok && resultado.logado && resultado.usuario.perfil === "admin") {
+            btnAdm.hidden = false;
+        }
+    } catch (erro) {
+        console.error("Erro ao verificar o perfil administrativo:", erro);
+    }
+}
+
+verificarPerfilAdm();
+
+btnAdm.addEventListener("click", async () => {
     perfilAdm.showModal();
-})
+    totalUsuariosAdm.textContent = "";
+    listaUsuariosAdm.replaceChildren();
+    estadoUsuariosAdm.textContent = "Carregando usuários...";
+
+    try {
+        const resposta = await fetch("../php/usuarios/listar_usuarios.php");
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.sucesso) {
+            throw new Error(resultado.mensagem || "Não foi possível carregar os usuários.");
+        }
+
+        totalUsuariosAdm.textContent = `${resultado.total} usuário(s) cadastrado(s)`;
+        estadoUsuariosAdm.textContent = resultado.total
+            ? ""
+            : "Nenhum usuário cadastrado.";
+
+        resultado.usuarios.forEach(usuario => {
+            const item = document.createElement("li");
+            item.textContent = usuario.nome;
+            listaUsuariosAdm.appendChild(item);
+        });
+    } catch (erro) {
+        console.error("Erro ao carregar a lista de usuários:", erro);
+        estadoUsuariosAdm.textContent = "Não foi possível carregar os usuários. Tente novamente.";
+    }
+});
 
 fecharAdm.addEventListener("click", () => {
-    perfilAdm.showModal(false);
-})
+    perfilAdm.close();
+});
 
 // Historico de pagamentos //
 const btnHis = document.getElementById('btnHistorico')

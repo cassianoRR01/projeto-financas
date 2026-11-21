@@ -410,6 +410,90 @@ dialog {
     background: #16a34a;
 }
 
+/* dialog administrativo */
+
+#dialogPerfilAdm {
+    max-width: 520px;
+    width: 94%;
+    gap: 16px;
+}
+
+.cabecalhoAdm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.rotuloAdm {
+    color: #16a34a;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.cabecalhoAdm h2 {
+    margin-top: 4px;
+    color: #1f2937;
+    font-size: 1.35rem;
+}
+
+.iconeAdm {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 1.7rem;
+}
+
+.totalUsuariosAdm {
+    color: #475569;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.listaUsuariosAdm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0;
+    list-style: none;
+}
+
+.listaUsuariosAdm li {
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.estadoUsuariosAdm {
+    color: #64748b;
+    font-size: .92rem;
+}
+
+#fecharAdm {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #22c55e;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#fecharAdm:hover {
+    background: #16a34a;
+}
+
 .contas {
     width: 100%;
     height: 100%;
@@ -625,4 +709,31 @@ body.dark .itemHistorico {
 
 body.dark .itemHistorico p {
     color: #d1d5db;
+}
+
+body.dark .cabecalhoAdm {
+    border-bottom-color: #374151;
+}
+
+body.dark .cabecalhoAdm h2 {
+    color: #f9fafb;
+}
+
+body.dark .iconeAdm {
+    background: rgba(34,197,94,.2);
+    color: #22c55e;
+}
+
+body.dark .totalUsuariosAdm {
+    color: #d1d5db;
+}
+
+body.dark .listaUsuariosAdm li {
+    border-color: #374151;
+    background: #111827;
+    color: #e5e7eb;
+}
+
+body.dark .estadoUsuariosAdm {
+    color: #9ca3af;
 }
