@@ -1,8 +1,23 @@
 // Verifa se o usuario está logado, caso não, ele é redirecionado a tela de login //
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'))
 
-if(!usuarioLogado){
-    window.location.href = 'login.html';
+async function verificarUsuario(){
+    try {
+        const resposta = await fetch(
+            "../php/usuarios/verificar_sessao.php"
+        );
+        const resultado = await resposta.json();
+
+        if(!resposta.ok || !resultado.logado){
+            window.location.href = "login.html";
+            return null;
+        }
+        return resultado.usuario;
+    } catch(erro){
+        console.error("Erro ao verificar usuário: ", erro);
+        window.location.href = "login.html";
+        return null;
+    }
 }
 
 if(!usuarioLogado.contas){
