@@ -19,6 +19,12 @@ CREATE TABLE usuarios (
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE administradores (
+    id_administrador INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE movimentacoes(
 	id_movimentacao INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,

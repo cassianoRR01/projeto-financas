@@ -24,7 +24,8 @@ echo json_encode([
     "usuario" => [
         "id_usuario" => $usuario["id_usuario"],
         "nome" => $usuario["nome"],
-        "email" => $usuario["email"]
+        "email" => $usuario["email"],
+        "perfil" => $usuario["perfil"] ?? "usuario"
     ]
 ]);
 
