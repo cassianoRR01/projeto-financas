@@ -100,7 +100,64 @@ async function iniciarFinanceiro() {
     const campo = document.querySelectorAll(".campo");
     const spanConta = document.querySelectorAll(".spanForm");
 
-   
+    // dialog adm
+
+    const perfilAdm = document.getElementById("dialogPerfilAdm");
+    const btnAdm = document.getElementById("btnAdm");
+    const fecharAdm = document.getElementById("fecharAdm");
+    const totalUsuariosAdm = document.getElementById("totalUsuariosAdm");
+    const estadoUsuariosAdm = document.getElementById("estadoUsuariosAdm");
+    const listaUsuariosAdm = document.getElementById("listaUsuariosAdm");
+
+    async function verificarPerfilAdm() {
+        try {
+            const resposta = await fetch("../php/usuarios/verifcar_sessao.php");
+            const resultado = await resposta.json();
+
+            if (resposta.ok && resultado.logado && resultado.usuario.perfil === "admin") {
+                btnAdm.hidden = false;
+            }
+        } catch (erro) {
+            console.error("Erro ao verificar o perfil administrativo:", erro);
+        }
+    }
+
+    verificarPerfilAdm();
+
+    btnAdm.addEventListener("click", async () => {
+        perfilAdm.showModal();
+        totalUsuariosAdm.textContent = "";
+        listaUsuariosAdm.replaceChildren();
+        estadoUsuariosAdm.textContent = "Carregando usuários...";
+
+        try {
+            const resposta = await fetch("../php/usuarios/listar_usuarios.php");
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(resultado.mensagem || "Não foi possível carregar os usuários.");
+            }
+
+            totalUsuariosAdm.textContent = `${resultado.total} usuário(s) cadastrado(s)`;
+            estadoUsuariosAdm.textContent = resultado.total
+                ? ""
+                : "Nenhum usuário cadastrado.";
+
+            resultado.usuarios.forEach(usuario => {
+                const item = document.createElement("li");
+                item.textContent = usuario.nome;
+                listaUsuariosAdm.appendChild(item);
+            });
+        } catch (erro) {
+            console.error("Erro ao carregar a lista de usuários:", erro);
+            estadoUsuariosAdm.textContent = "Não foi possível carregar os usuários. Tente novamente.";
+        }
+    });
+
+    fecharAdm.addEventListener("click", () => {
+        perfilAdm.close();
+    });
+    
     // SALVAR DADOS FINANCEIROS
 
     function salvarUsuario() {
@@ -199,7 +256,6 @@ async function iniciarFinanceiro() {
 
     // HISTÓRICO DE PAGAMENTOS - ABRIR E FECHAR
    
-
     if (btnHis && modalHis) {
 
         btnHis.addEventListener("click", (e) => {

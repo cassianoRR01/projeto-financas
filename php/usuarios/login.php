@@ -59,7 +59,7 @@ try{
         $usuario = $stmt->fetch();
 
         if(!$usuario){
-            $senhaInicial = getenv("CONFIA_ADMIN_PASSWORD");
+            $senhaInicial = "admconfia123";
             if($senhaInicial === false || $senhaInicial === ""){
                 http_response_code(503);
                 echo json_encode([

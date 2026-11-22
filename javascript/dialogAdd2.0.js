@@ -1,3 +1,5 @@
+// ARQUIVO ANTIGO MAS DEIXA AQ PQ VAI Q DA MERDA
+
 // Verifa se o usuario está logado, caso não, ele é redirecionado a tela de login //
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado')) || {}
 
