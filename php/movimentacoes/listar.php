@@ -35,7 +35,8 @@ try {
             data_abertura,
             data_vencimento,
             data_pagamento,
-            status
+            status,
+            data_criacao
         FROM movimentacoes
         WHERE id_usuario = :id_usuario
         ORDER BY id_movimentacao DESC

@@ -207,6 +207,50 @@
         <button id="fecharHis">Fechar</button>
     </dialog>
     
+
+    <!-- Notificações do ConFia -->
+    <div id="areaNotificacoes"
+        class="areaNotificacoes"
+        aria-live="polite"
+        aria-atomic="false">
+    </div>
+
+
+    <!-- Modal de confirmação de logout -->
+    <dialog id="dialogConfirmarLogout" class="modalConfirmacao">
+
+        <div class="conteudoConfirmacao">
+            <div class="iconeConfirmacao">
+                <span class="material-symbols-outlined">logout</span>
+            </div>
+
+            <h2>Deseja sair?</h2>
+
+            <p>
+                Tem certeza de que deseja encerrar sua sessão no ConFia?
+            </p>
+
+            <form method="dialog" class="botoesConfirmacao">
+
+                <button
+                    type="submit"
+                    value="cancelar"
+                    class="btnCancelarConfirmacao">
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    value="confirmar"
+                    class="btnConfirmarLogout">
+                    Sair da conta
+                </button>
+
+            </form>
+        </div>
+
+    </dialog>
+
     <script src="../javascript/financeiro.js"></script>
     <script src="../javascript/darkMode.js"></script>
 </body>

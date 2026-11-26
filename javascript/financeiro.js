@@ -44,7 +44,77 @@ async function iniciarFinanceiro() {
         historico: [],
         receitas: []
     };
-   
+
+    function mostrarNotificacao(tipo, titulo, mensagem, duracao = 4000) {
+
+        const area = document.getElementById("areaNotificacoes");
+
+        if (!area) {
+            console.error("Área de notificações não encontrada.");
+            return;
+        }
+
+        const icones = {
+            sucesso: "",
+            erro: "",
+            aviso: "",
+            info: ""
+        };
+
+        if (!Object.hasOwn(icones, tipo)) {
+            tipo = "info";
+        }
+
+        const notificacao = document.createElement("div");
+        notificacao.classList.add("notificacao", tipo);
+
+        const icone = document.createElement("span");
+        icone.classList.add("notificacaoIcone");
+        icone.textContent = icones[tipo];
+
+        const conteudo = document.createElement("div");
+        conteudo.classList.add("notificacaoConteudo");
+
+        const tituloElemento = document.createElement("h3");
+        tituloElemento.textContent = titulo;
+
+        const mensagemElemento = document.createElement("p");
+        mensagemElemento.textContent = mensagem;
+
+        const fechar = document.createElement("button");
+        fechar.classList.add("fecharNotificacao");
+        fechar.textContent = "×";
+        fechar.setAttribute("aria-label", "Fechar notificação");
+
+        conteudo.append(tituloElemento, mensagemElemento);
+        notificacao.append(icone, conteudo, fechar);
+
+        area.appendChild(notificacao);
+
+        let temporizador;
+
+        function removerNotificacao() {
+            if (notificacao.classList.contains("saindo")) return;
+
+            clearTimeout(temporizador);
+
+            notificacao.classList.add("saindo");
+
+            notificacao.addEventListener("animationend", () => {
+                notificacao.remove();
+            }, { once: true });
+
+            // Garante a remoção caso animações estejam desativadas.
+            setTimeout(() => notificacao.remove(), 300);
+            }
+
+            fechar.addEventListener("click", removerNotificacao);
+
+            if (duracao > 0) {
+                temporizador = setTimeout(removerNotificacao, duracao);
+            }
+    }   
+
     // PARADAS DO HTML
    
     const BtnLogin = document.getElementById("btnLogin");
@@ -54,6 +124,7 @@ async function iniciarFinanceiro() {
 
     const btnExcluirConta = document.getElementById("excluirContaBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+    const dialogConfirmarLogout = document.getElementById("dialogConfirmarLogout");
 
     const btnHis = document.getElementById("btnHistorico");
     const modalHis = document.getElementById("dialogHistorico");
@@ -95,7 +166,7 @@ async function iniciarFinanceiro() {
 
     async function verificarPerfilAdm() {
         try {
-            const resposta = await fetch("../php/usuarios/verifcar_sessao.php");
+            const resposta = await fetch("../php/usuarios/verificar_sessao.php");
             const resultado = await resposta.json();
 
             if (resposta.ok && resultado.logado && resultado.usuario.perfil === "admin") {
@@ -176,56 +247,83 @@ async function iniciarFinanceiro() {
 
         btnExcluirConta.addEventListener("click", () => {
 
-            alert(
-                "A exclusão da conta precisa ser implementada pelo PHP e pelo banco de dados. Esta função ainda não está disponível."
+            mostrarNotificacao(
+                "info",
+                "Recurso indisponível",
+                "A exclusão da conta ainda precisa ser implementada no PHP e no banco de dados."
             );
 
         });
     }
    
+
+    // MODAL DE CONFIRMAÇÃO DE LOGOUT
+
+    function confirmarLogout() {
+
+        return new Promise(resolve => {
+            // Aguarda o fechamento da modal
+            dialogConfirmarLogout.addEventListener("close", () => {
+                // Retorna true somente se o usuário confirmou
+                resolve(dialogConfirmarLogout.returnValue === "confirmar");
+            }, { once: true });
+
+            dialogConfirmarLogout.showModal();
+
+        });
+    }
+
     // LOGOUT
 
-if (logoutBtn) {
+    if (logoutBtn) {
 
-    logoutBtn.addEventListener("click", async (e) => {
+        logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
 
-        // Impede o comportamento padrão do botão/formulário
-        e.preventDefault();
+            // Abre a modal e aguarda a decisão
+            const confirmar = await confirmarLogout();
 
-        const confirmar = confirm("Deseja realmente sair da sua conta?");
-
-        if (!confirmar) {
-            return;
-        }
-
-        try {
-
-            const resposta = await fetch(
-                "../php/usuarios/logout.php",
-                {
-                    method: "POST"
-                }
-            );
-
-            const resultado = await resposta.json();
-
-            console.log("Resposta do logout:", resultado);
-
-            if (!resposta.ok || !resultado.sucesso) {
-                alert("Não foi possível encerrar a sessão.");
+            if (!confirmar) {
                 return;
             }
 
-            // Redireciona para o login
-            window.location.replace("/projeto-financas/paginas/login.html");
+            try {
+                const resposta = await fetch(
+                    "../php/usuarios/logout.php",
+                    {
+                        method: "POST"
+                    }
+                );
 
-        } catch (erro) {
-            console.error("Erro ao realizar logout:", erro);
-            alert("Erro ao tentar sair da conta.");
-        }
+                const resultado = await resposta.json();
 
-    });
-}
+                console.log("Resposta do logout:", resultado);
+
+                if (!resposta.ok || !resultado.sucesso) {
+                    mostrarNotificacao(
+                        "erro",
+                        "Erro ao sair",
+                        "Não foi possível encerrar sua sessão."
+                    );
+                    return;
+                }
+
+                // Redireciona para o login
+                window.location.replace(
+                    "/projeto-financas/paginas/login.html"
+                );
+
+            } catch (erro) {
+
+                console.error("Erro ao realizar logout:", erro);
+                mostrarNotificacao(
+                    "erro",
+                    "Erro de conexão",
+                    "Não foi possível conectar ao servidor para encerrar sua sessão."
+                );
+            }
+        });
+    }
 
     // HISTÓRICO DE PAGAMENTOS - ABRIR E FECHAR
    
@@ -490,11 +588,14 @@ if (logoutBtn) {
 
                 } else if (movimentacao.tipo === "receita") {
 
+                    const dataCadastro = movimentacao.data_criacao
+                        ? formatarData(movimentacao.data_criacao.split(" ")[0])
+                        : "Não informado";
+
                     usuarioLogado.receitas.push({
                         ...registro,
-                        dataCadastro: "Não informado"
+                        dataCadastro: dataCadastro
                     });
-
                 }
             });
 
@@ -710,8 +811,10 @@ if (logoutBtn) {
             // Verifica se o cadastro foi realizado
             if (!resposta.ok || !resultado.sucesso) {
 
-                alert(
-                    resultado.mensagem || "Não foi possível cadastrar a despesa."
+                mostrarNotificacao(
+                    "erro",
+                    "Erro ao cadastrar despesa",
+                    resultado.mensagem || "Não foi possível cadastrar sua despesa."
                 );
                 return;
             }
@@ -748,7 +851,11 @@ if (logoutBtn) {
                 }
             });
 
-            alert(resultado.mensagem);
+            mostrarNotificacao(
+                "sucesso",
+                "Despesa cadastrada!",
+                resultado.mensagem || "Sua despesa foi salva com sucesso."
+            );
 
         } catch (erro) {
             console.error("Erro ao cadastrar despesa:", erro);
@@ -889,6 +996,12 @@ if (logoutBtn) {
 
             atualizarTotais();
 
+            mostrarNotificacao(
+                "sucesso",
+                "Despesa paga!",
+                "A despesa foi movida para seu histórico de pagamentos."
+            );
+
         } catch (erro) {
 
             console.error("Erro ao pagar despesa:", erro);
@@ -943,7 +1056,11 @@ if (logoutBtn) {
             !Number.isFinite(valor) ||
             valor <= 0
         ) {
-            alert("Preencha corretamente o nome e o valor da receita.");
+            mostrarNotificacao(
+                "aviso",
+                "Dados inválidos",
+                "Preencha corretamente o nome e o valor da receita."
+            );
             return;
         }
 
@@ -976,14 +1093,15 @@ if (logoutBtn) {
                 return;
             }
 
-            // Cria o objeto utilizando o ID do MariaDB
+            // Cria o objeto utilizando o ID
             const receitaCadastrada = {
 
                 id: Number(resultado.id_movimentacao),
                 nome: nome,
                 valor: valor,
-                dataCadastro: new Date().toLocaleDateString("pt-BR")
-
+                dataCadastro: resultado.data_criacao
+                    ? formatarData(resultado.data_criacao.split(" ")[0])
+                    : new Date().toLocaleDateString("pt-BR")
             };
 
             // Atualiza os dados em memória
@@ -997,7 +1115,11 @@ if (logoutBtn) {
             // Fecha e limpa o formulário
             modalConta.close();
             formRec.reset();
-            alert(resultado.mensagem);
+            mostrarNotificacao(
+                "sucesso",
+                "Receita cadastrada!",
+                resultado.mensagem || "Sua receita foi salva com sucesso."
+            );
 
         } catch (erro) {
 

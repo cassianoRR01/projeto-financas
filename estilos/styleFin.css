@@ -737,3 +737,251 @@ body.dark .listaUsuariosAdm li {
 body.dark .estadoUsuariosAdm {
     color: #9ca3af;
 }
+
+/* NOTIFICAÇÕES CONFIA */
+
+.areaNotificacoes {
+    position: fixed;
+    top: 75px;
+    right: 25px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(380px, calc(100vw - 30px));
+    pointer-events: none;
+}
+
+.notificacao {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    background: white;
+    color: #334155;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .12);
+    border-left: 5px solid;
+    pointer-events: auto;
+    animation: entrarNotificacao .3s ease forwards;
+}
+
+.notificacao.sucesso {
+    border-color: #22c55e;
+}
+
+.notificacao.erro {
+    border-color: #ef4444;
+}
+
+.notificacao.aviso {
+    border-color: #f59e0b;
+}
+
+.notificacao.info {
+    border-color: #3b82f6;
+}
+
+.notificacaoIcone {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.notificacaoConteudo {
+    flex: 1;
+}
+
+.notificacaoConteudo h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.notificacaoConteudo p {
+    font-size: .9rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.fecharNotificacao {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.fecharNotificacao:hover {
+    color: #334155;
+}
+
+.notificacao.saindo {
+    animation: sairNotificacao .1s ease forwards;
+}
+
+@keyframes entrarNotificacao {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes sairNotificacao {
+    to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+}
+
+/* Modo escuro */
+
+body.dark .notificacao {
+    background: #1f2937;
+    color: #f9fafb;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .35);
+}
+
+body.dark .notificacaoConteudo p {
+    color: #9ca3af;
+}
+
+body.dark .fecharNotificacao {
+    color: #9ca3af;
+}
+
+body.dark .fecharNotificacao:hover {
+    color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notificacao,
+    .notificacao.saindo {
+        animation: none;
+    }
+}
+
+/* MODAL DE CONFIRMAÇÃO */
+
+.modalConfirmacao {
+    width: min(420px, calc(100% - 30px));
+    padding: 0;
+    border: none;
+    border-radius: 20px;
+    background: white;
+    color: #334155;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+    margin: auto;
+}
+
+.modalConfirmacao::backdrop {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.conteudoConfirmacao {
+    padding: 30px;
+    text-align: center;
+}
+
+.iconeConfirmacao {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconeConfirmacao span {
+    font-size: 32px;
+}
+
+.conteudoConfirmacao h2 {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.conteudoConfirmacao p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.botoesConfirmacao {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.botoesConfirmacao button {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btnCancelarConfirmacao {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.btnCancelarConfirmacao:hover {
+    background: #cbd5e1;
+}
+
+.btnConfirmarLogout {
+    background: #22c55e;
+    color: white;
+}
+
+.btnConfirmarLogout:hover {
+    background: #16a34a;
+}
+
+/* MODO ESCURO */
+
+body.dark .modalConfirmacao {
+    background: #1f2937;
+    color: #f9fafb;
+}
+
+body.dark .conteudoConfirmacao p {
+    color: #9ca3af;
+}
+
+body.dark .iconeConfirmacao {
+    background: #14532d;
+    color: #4ade80;
+}
+
+body.dark .btnCancelarConfirmacao {
+    background: #374151;
+    color: #f9fafb;
+}
+
+body.dark .btnCancelarConfirmacao:hover {
+    background: #4b5563;
+}
+
+@media (max-width: 450px) {
+    .conteudoConfirmacao {
+        padding: 24px 18px;
+    }
+
+    .botoesConfirmacao {
+        flex-direction: column-reverse;
+    }
+}
