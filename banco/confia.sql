@@ -41,3 +41,6 @@ CREATE TABLE movimentacoes(
 show tables;
 
 select * from usuarios;
+select * from administradores;
+select * from movimentacoes;
+DESCRIBE movimentacoes;

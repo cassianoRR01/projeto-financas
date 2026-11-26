@@ -33,32 +33,16 @@ async function iniciarFinanceiro() {
         return;
     }
 
-    // Id dos dados financeiros
-    const idDados = `dadosFinanceiro_${usuarioSessao.id_usuario}`;
-
-    // Recupera os dados financeiros temporários
-    let dadosSalvos = {};
-
-    try {
-        dadosSalvos = JSON.parse(localStorage.getItem(idDados)) || {};
-    } catch (erro) {
-        console.error("Erro ao recuperar dados financeiros:", erro);
-    }
-
     // Objeto do usuário baseado na sessão PHP
     const usuarioLogado = {
         id_usuario: usuarioSessao.id_usuario,
         nomeUser: usuarioSessao.nome,
         emailUser: usuarioSessao.email,
-        contas: Array.isArray(dadosSalvos.contas)
-            ? dadosSalvos.contas
-            : [],
-        historico: Array.isArray(dadosSalvos.historico)
-            ? dadosSalvos.historico
-            : [],
-        receitas: Array.isArray(dadosSalvos.receitas)
-            ? dadosSalvos.receitas
-            : []
+
+        // Os dados serão carregados pelo MariaDB
+        contas: [],
+        historico: [],
+        receitas: []
     };
    
     // PARADAS DO HTML
@@ -157,22 +141,6 @@ async function iniciarFinanceiro() {
     fecharAdm.addEventListener("click", () => {
         perfilAdm.close();
     });
-    
-    // SALVAR DADOS FINANCEIROS
-
-    function salvarUsuario() {
-
-        const dadosFinanceiros = {
-            contas: usuarioLogado.contas,
-            historico: usuarioLogado.historico,
-            receitas: usuarioLogado.receitas
-        };
-
-        localStorage.setItem(
-            idDados,
-            JSON.stringify(dadosFinanceiros)
-        );
-    }
    
     // INFORMAÇÕES DO USUÁRIO
    
@@ -216,43 +184,48 @@ async function iniciarFinanceiro() {
     }
    
     // LOGOUT
-   
-    if (logoutBtn) {
 
-        logoutBtn.addEventListener("click", async () => {
+if (logoutBtn) {
 
-            const confirmar = confirm("Deseja realmente sair da sua conta?");
+    logoutBtn.addEventListener("click", async (e) => {
 
-            if (!confirmar) {
+        // Impede o comportamento padrão do botão/formulário
+        e.preventDefault();
+
+        const confirmar = confirm("Deseja realmente sair da sua conta?");
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+
+            const resposta = await fetch(
+                "../php/usuarios/logout.php",
+                {
+                    method: "POST"
+                }
+            );
+
+            const resultado = await resposta.json();
+
+            console.log("Resposta do logout:", resultado);
+
+            if (!resposta.ok || !resultado.sucesso) {
+                alert("Não foi possível encerrar a sessão.");
                 return;
             }
 
-            try {
+            // Redireciona para o login
+            window.location.replace("/projeto-financas/paginas/login.html");
 
-                const resposta = await fetch(
-                    "../php/usuarios/logout.php",
-                    {
-                        method: "POST"
-                    }
-                );
+        } catch (erro) {
+            console.error("Erro ao realizar logout:", erro);
+            alert("Erro ao tentar sair da conta.");
+        }
 
-                const resultado = await resposta.json();
-
-                if (!resposta.ok || !resultado.sucesso) {
-                    alert("Não foi possível encerrar a sessão.");
-                    return;
-                }
-
-                window.location.href = "login.html";
-
-            } catch (erro) {
-
-                console.error("Erro ao realizar logout:", erro);
-                alert("Erro ao tentar sair da conta.");
-
-            }
-        });
-    }
+    });
+}
 
     // HISTÓRICO DE PAGAMENTOS - ABRIR E FECHAR
    
@@ -472,6 +445,76 @@ async function iniciarFinanceiro() {
 
     // CARREGAR DESPESAS E RECEITAS
    
+    // Busca movimentações no Banco
+    async function carregarMovimentacoes() {
+
+        try {
+            const resposta = await fetch(
+                "../php/movimentacoes/listar.php"
+            );
+
+            const resultado = await resposta.json();
+
+            if (!resposta.ok || !resultado.sucesso) {
+                throw new Error(
+                    resultado.mensagem || "Erro ao carregar movimentações."
+                );
+            }
+
+            // Limpa os arrays antes de carregar os dados
+            usuarioLogado.contas = [];
+            usuarioLogado.historico = [];
+            usuarioLogado.receitas = [];
+
+            // Percorre todas as movimentações retornadas pelo PHP
+            resultado.movimentacoes.forEach(movimentacao => {
+
+                const registro = {
+                    id: Number(movimentacao.id_movimentacao),
+                    nome: movimentacao.nome,
+                    valor: Number(movimentacao.valor),
+                    abertura: movimentacao.data_abertura || "",
+                    vencimento: movimentacao.data_vencimento || "",
+                    status: movimentacao.status,
+                    dataPagamento: movimentacao.data_pagamento ? formatarData(movimentacao.data_pagamento) : ""
+                };
+
+                // Separa as movimentações por tipo e situação
+                if (movimentacao.tipo === "despesa") {
+
+                    if (movimentacao.status === "paga") {
+                        usuarioLogado.historico.push(registro);
+                    } else {
+                        usuarioLogado.contas.push(registro);
+                    }
+
+                } else if (movimentacao.tipo === "receita") {
+
+                    usuarioLogado.receitas.push({
+                        ...registro,
+                        dataCadastro: "Não informado"
+                    });
+
+                }
+            });
+
+            console.log("Movimentações carregadas:", {
+                despesas: usuarioLogado.contas,
+                historico: usuarioLogado.historico,
+                receitas: usuarioLogado.receitas
+            });
+
+        } catch (erro) {
+
+            console.error("Erro ao carregar movimentações:", erro);
+            alert(
+                "Não foi possível carregar seus dados financeiros."
+            );
+
+        }
+
+    }
+
     function carregarContas() {
 
         listaContas.innerHTML = "";
@@ -612,13 +655,11 @@ async function iniciarFinanceiro() {
     }
 
     // CADASTRAR DESPESA
-   
-    formConta.addEventListener("submit", (e) => {
 
+    formConta.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const nomeConta = document.getElementById("nome").value.trim();
-
         const valorConta = Number(
             document.getElementById("valor").value
         );
@@ -626,7 +667,7 @@ async function iniciarFinanceiro() {
         const dataAbertura = campoAbertura.value;
         const dataVencimento = campoVencimento.value;
 
-        // Executa todas as validações
+        // Executa as validações existentes
         const validacoes = [
             valNome(),
             valValor(),
@@ -641,41 +682,92 @@ async function iniciarFinanceiro() {
             return;
         }
 
-        // Cria a nova despesa
-        const novaConta = {
-
-            id: Date.now(),
+        // Dados que serão enviados ao PHP
+        const novaDespesa = {
             nome: nomeConta,
             valor: valorConta,
+            tipo: "despesa",
             abertura: checkVenci.checked ? "" : dataAbertura,
-            vencimento: checkVenci.checked ? "" : dataVencimento,
-            status: "pendente"
+            vencimento: checkVenci.checked ? "" : dataVencimento
         };
 
-        // Adiciona ao usuário
-        usuarioLogado.contas.push(novaConta);
+        try {
 
-        salvarUsuario();
+            // Envia os dados para o PHP
+            const resposta = await fetch(
+                "../php/movimentacoes/cadastrar.php",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(novaDespesa)
+                }
+            );
 
-        // Atualiza a tela
-        exibirContaTela(novaConta);
+           const resultado = await resposta.json();
 
-        atualizarMensagemSemContas();
-        atualizarTotais();
+            // Verifica se o cadastro foi realizado
+            if (!resposta.ok || !resultado.sucesso) {
 
-        // Fecha e limpa o formulário
-        modalConta.close();
-        formConta.reset();
-
-        spanConta.forEach((span, index) => {
-            span.style.display = "none";
-
-            if (campo[index]) {
-                campo[index].style.border = "";
+                alert(
+                    resultado.mensagem || "Não foi possível cadastrar a despesa."
+                );
+                return;
             }
-        });
+
+            // Cria o objeto utilizando o ID gerado pelo MariaDB
+            const contaCadastrada = {
+                id: Number(resultado.id_movimentacao),
+                nome: nomeConta,
+                valor: valorConta,
+                abertura: novaDespesa.abertura,
+                vencimento: novaDespesa.vencimento,
+                status: "pendente"
+            };
+
+            // Atualiza os dados em memória
+            usuarioLogado.contas.push(contaCadastrada);
+
+            // Atualiza a interface
+            exibirContaTela(contaCadastrada);
+
+            atualizarMensagemSemContas();
+
+            atualizarTotais();
+
+            // Fecha e limpa o formulário
+            modalConta.close();
+
+            formConta.reset();
+
+            spanConta.forEach((span, index) => {
+                span.style.display = "none";
+                if (campo[index]) {
+                    campo[index].style.border = "";
+                }
+            });
+
+            alert(resultado.mensagem);
+
+        } catch (erro) {
+            console.error("Erro ao cadastrar despesa:", erro);
+            alert("Não foi possível conectar ao servidor.");
+        }
+
     });
-   
+
+    listaContas.addEventListener("click", (e) => {
+        const botao = e.target.closest("button[data-pago]");
+
+        if (!botao) {
+            return;
+        }
+        
+        const idConta = Number(botao.dataset.pago);
+        pagoConta(idConta);
+    });
+
     // EXIBIR HISTÓRICO NA TELA
    
     function exibirHistoricoTela(conta) {
@@ -727,7 +819,7 @@ async function iniciarFinanceiro() {
 
     // 21. MARCAR DESPESA COMO PAGA
 
-    function pagoConta(idConta) {
+    async function pagoConta(idConta) {
 
         const indiceConta = usuarioLogado.contas.findIndex(
             conta => Number(conta.id) === Number(idConta)
@@ -739,39 +831,72 @@ async function iniciarFinanceiro() {
 
         const conta = usuarioLogado.contas[indiceConta];
 
-        const contaHistorico = {
-            ...conta,
-            status: "pago",
-            dataPagamento: new Date().toLocaleDateString("pt-BR")
-        };
+        try {
 
-        // Adiciona ao histórico
-        usuarioLogado.historico.push(contaHistorico);
+            const resposta = await fetch(
+                "../php/movimentacoes/pagar.php",
+                {
+                    method: "POST",
 
-        // Remove das despesas pendentes
-        usuarioLogado.contas.splice(indiceConta, 1);
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-        salvarUsuario();
+                    body: JSON.stringify({
+                        id_movimentacao: idConta
+                    })
+                }
+            );
 
-        // Atualiza as listas
-        carregarContas();
-        carregarHistorico();
-    }
+            const resultado = await resposta.json();
 
+            if (!resposta.ok || !resultado.sucesso) {
 
-    // Evento para os botões de pagamento
-    listaContas.addEventListener("click", (e) => {
+                alert(
+                    resultado.mensagem || "Não foi possível atualizar a despesa."
+                );
 
-        const botao = e.target.closest("button[data-pago]");
+                return;
+            }
 
-        if (!botao) {
-            return;
+            // Converte a data do banco para o formato brasileiro
+            const dataPagamento = resultado.data_pagamento
+                .split("-")
+                .reverse()
+                .join("/");
+
+            // Cria o registro do histórico
+            const contaHistorico = {
+
+                ...conta,
+
+                status: "paga",
+
+                dataPagamento: dataPagamento
+
+            };
+
+            // Adiciona ao histórico em memória
+            usuarioLogado.historico.push(contaHistorico);
+
+            // Remove das despesas pendentes em memória
+            usuarioLogado.contas.splice(indiceConta, 1);
+
+            // Atualiza a interface
+            carregarContas();
+
+            carregarHistorico();
+
+            atualizarTotais();
+
+        } catch (erro) {
+
+            console.error("Erro ao pagar despesa:", erro);
+
+            alert("Não foi possível conectar ao servidor.");
+
         }
-
-        const idConta = Number(botao.dataset.pago);
-
-        pagoConta(idConta);
-    });
+    }
 
     // ALTERNAR ENTRE DESPESA E RECEITA
 
@@ -805,7 +930,7 @@ async function iniciarFinanceiro() {
 
     // CADASTRAR RECEITA
 
-    formRec.addEventListener("submit", (e) => {
+    formRec.addEventListener("submit", async (e) => {
 
         e.preventDefault();
 
@@ -818,35 +943,71 @@ async function iniciarFinanceiro() {
             !Number.isFinite(valor) ||
             valor <= 0
         ) {
-
             alert("Preencha corretamente o nome e o valor da receita.");
-
             return;
         }
 
-        // Cria da receita
+        // Dados enviados ao PHP
         const novaReceita = {
-            id: Date.now(),
             nome: nome,
             valor: valor,
-            dataCadastro: new Date().toLocaleDateString("pt-BR")
+            tipo: "receita"
         };
 
-        // Adiciona ao usuário
-        usuarioLogado.receitas.push(novaReceita);
+        try {
 
-        salvarUsuario();
+            const resposta = await fetch(
+                "../php/movimentacoes/cadastrar.php",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(novaReceita)
+                }
+            );
 
-        // Atualiza a tela
-        exibirReceitaTela(novaReceita);
+            const resultado = await resposta.json();
 
-        atualizarMensagemSemContas();
-        atualizarTotais();
+            if (!resposta.ok || !resultado.sucesso) {
+                alert(
+                    resultado.mensagem || "Não foi possível cadastrar a receita."
+                );
+                return;
+            }
 
-        // Fecha e limpa o formulário
-        modalConta.close();
-        formRec.reset();
+            // Cria o objeto utilizando o ID do MariaDB
+            const receitaCadastrada = {
+
+                id: Number(resultado.id_movimentacao),
+                nome: nome,
+                valor: valor,
+                dataCadastro: new Date().toLocaleDateString("pt-BR")
+
+            };
+
+            // Atualiza os dados em memória
+            usuarioLogado.receitas.push(receitaCadastrada);
+
+            // Atualiza a interface
+            exibirReceitaTela(receitaCadastrada);
+            atualizarMensagemSemContas();
+            atualizarTotais();
+
+            // Fecha e limpa o formulário
+            modalConta.close();
+            formRec.reset();
+            alert(resultado.mensagem);
+
+        } catch (erro) {
+
+            console.error("Erro ao cadastrar receita:", erro);
+            alert("Não foi possível conectar ao servidor.");
+
+        }
+
     });
+
 
     // OPÇÃO DE DESPESA SEM DATA
   
@@ -879,6 +1040,8 @@ async function iniciarFinanceiro() {
             }
         });
     }
+
+    await carregarMovimentacoes();
 
     carregarContas();
     carregarHistorico();

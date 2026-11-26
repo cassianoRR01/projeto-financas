@@ -15,7 +15,7 @@ if(($_SESSION["usuario"]["perfil"] ?? "") !== "admin"){
 require_once __DIR__ . "/../conexao.php";
 
 try{
-    $stmt = $pdo->query("SELECT nome FROM usuarios ORDER BY nome ASC");
+    $stmt = $pdo->query("SELECT nome FROM usuarios ORDER BY id_usuario DESC");
     $usuarios = $stmt->fetchAll();
 
     echo json_encode([

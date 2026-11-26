@@ -147,9 +147,12 @@
 
             <!--formulario de receita-->
             <form id="formRec" hidden>
+
             <input type="text" id="nomeRec" class="campo" placeholder="Nome da receita">
+            <span class="spanForm" id="spanConta">Insira um Nome à Receita</span>
 
             <input type="number" id="valorRec" class="campo" step="0.01" placeholder="Valor R$">
+            <span class="spanForm" id="spanConta">Insira um Valor à Receita</span>
 
             <div>
                 <button type="submit" class="submit">Salvar</button>
@@ -167,7 +170,7 @@
             </div>
     
             <div>
-                <button id="logoutBtn">Logout</button>
+                <button type="button" id="logoutBtn">Logout</button>
                 <button id="fecharLogin">Fechar</button>
             </div>
 
